@@ -11,11 +11,11 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
     // }
     
 
-    public void BeforeInsert(List<CandidateNomination__c> newRecord) {
+    public void BeforeInsert(List<SObject> newRecord) {
 
         List<CandidateNomination__c> master_candidates = [SELECT ID, NominationId__c, Nominees__c, Description__c
                                                         FROM CandidateNomination__c WHERE Type__c = 'Master'];
-        for (CandidateNomination__c cc : newRecord) {
+        for (CandidateNomination__c cc : (List<CandidateNomination__c>)newRecord) {
             cc.Type__c='Master';
             for (CandidateNomination__c  ccmaster : master_candidates) {
                 if(cc.NominationId__c == ccmaster.NominationId__c && cc.Nominees__c == ccmaster.Nominees__c){
@@ -26,9 +26,9 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
         }
     }
 
-    public void BeforeDelete(List<CandidateNomination__c> delRecord) {
+    public void BeforeDelete(Map<Id, SObject> delRecord) {
         Set<String> deleted_cc_id = new Set<String>();
-        for(CandidateNomination__c cc : delRecord){
+        for(CandidateNomination__c cc : (List<CandidateNomination__c>)delRecord.values()){
             deleted_cc_id.add(cc.id);
         }
         List<CandidateNomination__c> masterList =  [SELECT ID, 

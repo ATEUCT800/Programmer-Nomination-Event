@@ -20,7 +20,7 @@ public class TriggerDispatcher
              if (Trigger.IsUpdate)
                 handler.BeforeUpdate(trigger.newMap, trigger.oldMap);
              if (Trigger.IsDelete)
-                handler.BeforeDelete(trigger.old);
+                handler.BeforeDelete(trigger.oldMap);
         }
         // After trigger logic
         if (Trigger.IsAfter)
