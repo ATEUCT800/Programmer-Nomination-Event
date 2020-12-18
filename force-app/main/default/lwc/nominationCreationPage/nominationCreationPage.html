@@ -1,0 +1,18 @@
+<template>
+    <lightning-card>
+            <template if:true={campaigns}>
+                <lightning-layout-item>
+                    <template for:each={campaigns.data} for:item="itemCampaign">
+                        <select key={itemCampaign.Id} name = "optionSelect">
+                            <option value={itemCampaign.Name}></option>
+                        </select> 
+                    </template>
+                </lightning-layout-item>
+                <lightning-input></lightning-input>
+                <lightning-button></lightning-button>
+            </template>  
+            <template if:false={campaigns}>
+                <p>There are no campaigns!</p>
+            </template>
+    </lightning-card>
+</template>
