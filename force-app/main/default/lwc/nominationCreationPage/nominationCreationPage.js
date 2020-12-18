@@ -14,24 +14,25 @@ export default class NominationCreationPage extends LightningElement {
 
     handleClick(){
         console.log(this.selectedCampaign + '\n' +this.nomination);
-        createNomination({campaignId: this.selectedCampaign.Id, nominationName: this.nomination});
-        // .then( () => {
-        //     this.dispatchEvent(
-        //         new ShowToastEvent({
-        //             title: 'title',
-        //             message: 'message',
-        //             variant: 'success',
-        //         })
-        //     );
-        // }).catch(error=>{ 
-        //     this.dispatchEvent(
-        //         new ShowToastEvent({
-        //             title: error.message,
-        //             message: '',
-        //             variant: 'error',
-        //         })
-        //     );
-        // });
+        createNomination({campaignId: this.selectedCampaign, nominationName: this.nomination})
+        .then( () => {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Nomination has been created',
+                    variant: 'success',
+                })
+            );
+        })
+        .catch(error =>{ 
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: error.body.message,
+                    variant: 'error',
+                })
+            );
+        });
     }
 
     handleTextChange(event){

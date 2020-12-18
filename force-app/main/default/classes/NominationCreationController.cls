@@ -7,8 +7,8 @@ public with sharing class NominationCreationController {
         return [SELECT Id, Name FROM Campaign];
     }
 
-    private static Boolean isNominationAlreadyExist(Campaign campaign, String nominationName){
-        List<Nomination__c> allNominationInCampaign = [SELECT Name FROM Nomination__c WHERE CampaignId__c = :campaign.Id ];
+    private static Boolean isNominationAlreadyExist(Id campaignId, String nominationName){
+        List<Nomination__c> allNominationInCampaign = [SELECT Name FROM Nomination__c WHERE CampaignId__c = :campaignId ];
         for(Nomination__c nominationItem : allNominationInCampaign){
             if(nominationItem.Name.equals(nominationName)){
                 System.debug('If worked!');
@@ -21,28 +21,12 @@ public with sharing class NominationCreationController {
 
     @AuraEnabled
     public static void createNomination (Id campaignId, String nominationName){
-        // Boolean flag ;
-        // List<Nomination__c> allNominationInCampaign = [SELECT Name FROM Nomination__c WHERE CampaignId__c = :campaign.Id ];
-        // for(Nomination__c nominationItem : allNominationInCampaign){
-        //     if(nominationItem.Name.equals(nominationName)){
-        //         System.debug('If worked!');
-        //         flag = true;
-        //     }
-        // }
-        
-
-        System.debug(campaignId + '\n'+ nominationName);
-        // if(!isNominationAlreadyExist(campaign,nominationName)){
-        //     Nomination__c newNomination = new Nomination__c(Name = nominationName, CampaignId__c = campaign.Id);
-        //     insert newNomination;
-        // }
-        // else {
-        //     //throw new CalloutException('Nomination already exists!');
-        // }
-
-        Nomination__c newNomination = new Nomination__c();
-        newNomination.Name = nominationName;
-        newNomination.CampaignId__c = campaignId;
-        insert newNomination;
+        if(!isNominationAlreadyExist(campaignId,nominationName)){
+            Nomination__c newNomination = new Nomination__c(Name = nominationName, CampaignId__c = campaignId);
+            insert newNomination;
+        }
+        else {
+            throw new AuraHandledException('Nomination already exists!');
+        }
     }
 }

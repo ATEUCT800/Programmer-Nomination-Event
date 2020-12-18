@@ -8,16 +8,13 @@ public with sharing class VoteTrH implements ITriggerHandler {
         for(Vote__c v : (List<Vote__c>)newItems){
             candNomMap.put(v.CandidateNominationId__c,null);
         }
-        candNomMap.remove(null);
         candNomMap.putAll([SELECT Id, NominationId__c FROM CandidateNomination__c WHERE Id IN :candNomMap.keyset()]);
-        for(Vote__c v : (List<Vote__c>)newItems){
-            v.NominationId__c = candNomMap.get(v.CandidateNominationId__c).NominationId__c;
-        }
 
         for(Vote__c vote : votes){
             for(Vote__c newVote : (List<Vote__c>)newItems){
                 if(vote.VoterId__c == newVote.VoterId__c
-                    && vote.CandidateNominationId__r.NominationId__c == newVote.NominationId__c){
+                    && vote.CandidateNominationId__r.NominationId__c == 
+                    candNomMap.get(newVote.CandidateNominationId__c).NominationId__c){
                         newVote.addError('You have already voted in this nomination!');    
                 }
                 else{
