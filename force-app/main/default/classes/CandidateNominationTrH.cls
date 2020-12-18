@@ -13,12 +13,14 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
 
     public void BeforeInsert(List<SObject> newRecord) {
 
-        List<CandidateNomination__c> master_candidates = [SELECT ID, NominationId__c, Nominees__c, Description__c
+        List<CandidateNomination__c> master_candidates = [SELECT ID, NominationId__c, Nominees__c, Description__c, CampaignId__c
                                                         FROM CandidateNomination__c WHERE Type__c = 'Master'];
         for (CandidateNomination__c cc : (List<CandidateNomination__c>)newRecord) {
             cc.Type__c='Master';
             for (CandidateNomination__c  ccmaster : master_candidates) {
-                if(cc.NominationId__c == ccmaster.NominationId__c && cc.Nominees__c == ccmaster.Nominees__c){
+                if(cc.NominationId__c == ccmaster.NominationId__c 
+                    && cc.Nominees__c == ccmaster.Nominees__c 
+                    && cc.CampaignId__c == ccmaster.CampaignId__c){
                         cc.Type__c = 'Child';
                         cc.MasterRecordID__c = ccmaster.Id;
                 }
@@ -32,7 +34,7 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
             deleted_cc_id.add(cc.id);
         }
         List<CandidateNomination__c> masterList =  [SELECT ID, 
-                                                (SELECT ID, NominationId__c, Nominees__c, Description__c FROM ChildCandidateNominations__r)
+                                                (SELECT ID, NominationId__c, Nominees__c, Description__c, CampaignId__c FROM ChildCandidateNominations__r)
                                                 FROM CandidateNomination__c where ID IN :deleted_cc_id AND Type__c = 'Master'];
         List<CandidateNomination__c> childsForChangesList = new List<CandidateNomination__c>();
         for (CandidateNomination__c ccmaster :masterList) {
