@@ -32,11 +32,11 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
             deleted_cc_id.add(cc.id);
         }
         List<CandidateNomination__c> masterList =  [SELECT ID, 
-                                                (SELECT ID, NominationId__c, Nominees__c, Description__c FROM ChildRecordIDs__r)
+                                                (SELECT ID, NominationId__c, Nominees__c, Description__c FROM ChildCandidateNominations__r)
                                                 FROM CandidateNomination__c where ID IN :deleted_cc_id AND Type__c = 'Master'];
         List<CandidateNomination__c> childsForChangesList = new List<CandidateNomination__c>();
         for (CandidateNomination__c ccmaster :masterList) {
-            List<CandidateNomination__c> childList = ccmaster.ChildRecordIDs__r;
+            List<CandidateNomination__c> childList = ccmaster.ChildCandidateNominations__r;
             if(!childList.isEmpty()){
                 childList[0].Type__c = 'Master';
                 childList[0].MasterRecordID__c = NULL;
