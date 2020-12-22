@@ -1,51 +1,24 @@
 public with sharing class VotingController {
     
     @AuraEnabled
-    public static List<Contact> getContactList(List<Nomination__c> nominations) {                                                
-        List<CandidateNomination__c> cnWithCurrentNomination = [SELECT NominationId__c, Nominees__r.FirstName, Nominees__r.LastName, Nominees__r.Department FROM CandidateNomination__c WHERE NominationId__c in :nominations AND Type__c = 'Master'];
-
-        // Map<Id, List<Id>> cnWithCurrentNomination = [SELECT NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :nominations AND Type__c = 'Master'];
-        for(CandidateNomination__c cnItem : cnWithCurrentNomination){
-            System.debug('cnWithCurrentNomination: ' + cnItem.Nominees__c);
+    public static Map<Id, List<Contact>> getContactList(List<Nomination__c> nominations) {                                                
+        List<CandidateNomination__c> cnWithCurrentNomination = [SELECT NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :nominations AND Type__c = 'Master']; 
+        Set<Id> nominees = new Set<Id>();
+        for(CandidateNomination__c itemCN : cnWithCurrentNomination){
+            nominees.add(itemCN.Nominees__c);
         }
-        // Set<Id> nominees = new Set<Id>();
-        // for(CandidateNomination__c itemCN : cnWithCurrentNomination){
-        //     nominees.add(itemCN.Nominees__c);
-        // }
-        // List<Contact> contacts = [SELECT FirstName, LastName, Department FROM Contact WHERE Id IN :nominees];
-        // System.debug('contacts: ' + contacts);
-        // return contacts;
-
-        
-        Map<Id, List<Contact>> nomineesIdInNomination = new Map<Id, List<Contact>>();
+        Map<Id, Contact> contactMap = new Map<Id, Contact>([SELECT Id, FirstName, LastName, Department FROM Contact WHERE Id IN :nominees]);
+        Map<Id, List<Contact>> nomineesInNomination = new Map<Id, List<Contact>>();
         for(Nomination__c nominationItem : nominations){
-            List<Contact> nominees = new List<Contact>();
+            List<Contact> nomineesForNomination = new List<Contact>();
             for(CandidateNomination__c itemCN : cnWithCurrentNomination){
                 if(itemCN.NominationId__c == nominationItem.Id){
-                    nominees.add(itemCN.Nominees__c);
+                    nomineesForNomination.add(contactMap.get(itemCN.Nominees__c));
                 }
             }
-            nomineesIdInNomination.put(nominationItem.Id, nominees);
+            nomineesInNomination.put(nominationItem.Id, nomineesForNomination);
         }
-        //(SELECT FirstName, LastName, Department FROM Nominees__r)
-        // Map<Id, List<Contact>> nomineesInNomination = [SELECT NominationId__c, Nominees__r.FirstName, Nominees__r.LastName, Nominees__r.Department  FROM CandidateNomination__c WHERE NominationId__c IN :nominations];
-        // System.debug('nomineesInNomination: ', nomineesInNomination);
-        // Map<Id, List<Contact>> nomineesInNomination = [SELECT Nomination__c.Id, (SELECT FirstName, LastName, Department FROM Contact WHERE Id IN :nomineesIdInNomination.get(Nomination__c.Id)) FROM Nomination__c];
-        // Map<Id, List<List<String>>> nomineesIdInNomination = new Map<Id, List<List<String>>>();
-        // for(Nomination__c nominationItem : nominations){
-        //     List<Contact> nominees = new List<Contact>();
-        //     for(CandidateNomination__c itemCN : cnWithCurrentNomination){
-        //         if(itemCN.NominationId__c == nominationItem.Id){
-        //             nominees.add(itemCN.Nominees__c);
-        //         }
-        //     }
-        //     nomineesIdInNomination.put(nominationItem.Id, nominees);
-        // }
-        //         contacts.add([cnItem.Nominees__c, cnItem.Nominees__r.FirstName, cnItem.Nominees__r.LastName, cnItem.Nominees__r.Department])
-        List<Contact> contacts = [SELECT FirstName, LastName, Department FROM Contact WHERE FirstName = 'Andy'];
-        // System.debug('contacts: ' + contacts);
-        // return contacts;
-        return contacts;
+        return nomineesInNomination;
     }
 
     @AuraEnabled

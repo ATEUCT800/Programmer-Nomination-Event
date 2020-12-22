@@ -28,7 +28,7 @@ export default class NomineeSelectionPage extends LightningElement {
     }
     
     handleDescriptionChange(evt){
-        this.description = evt.target.value;
+        this.description = evt.target.value.slice(0,255);
     }
 
     handleSearchChange(evt) {
@@ -41,12 +41,11 @@ export default class NomineeSelectionPage extends LightningElement {
     }
 
     handleClickButton(evt) {
-        console.log(this.nominations);
-        if(!this.description){
+        if(this.description.length < 40){
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
-                    message: 'Fill all required fields!',
+                    message: 'Description has to be min 20 letters!',
                     variant: 'error',
                 })
             );

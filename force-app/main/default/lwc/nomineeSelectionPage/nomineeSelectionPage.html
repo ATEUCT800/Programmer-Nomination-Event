@@ -45,7 +45,7 @@
                         </lightning-layout-item>
                     </template>
                     <template if:true={selectedContact}>
-                            <lightning-textarea name="description" label="Description" placeholder="Enter a reason of your choice..." required onchange={handleDescriptionChange}></lightning-textarea>
+                            <lightning-input-rich-text name="description" label="Description" placeholder="Enter a reason of your choice..." required onchange={handleDescriptionChange}></lightning-input-rich-text>
                             <lightning-button variant="brand" label="Submit" title="Primary action" onclick={handleClickButton} class="slds-m-left_x-small"></lightning-button>
                     </template>
                 </template> 

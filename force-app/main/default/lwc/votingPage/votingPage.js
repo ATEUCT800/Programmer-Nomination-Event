@@ -9,29 +9,34 @@ import getContactList from '@salesforce/apex/VotingController.getContactList';
 export default class VotingPage extends LightningElement {
     queryTerm; 
     contacts;
+    contactsInNominations;
     nominations;
     campaign;
     voterEmail;
     selectedNomination;
     selectedCampaign;
     posibleVotes = {};
+    updateContacts = false;
+    hasVoted = false;
     connectedCallback(){
         getCampaignList().then(result => { 
             this.campaign = result;
             getNominationList({campaign: this.campaign.Id}).then(result => { 
                 this.nominations = result.slice();
                 getContactList({nominations: this.nominations}).then(result => { 
-                    this.contacts = result.slice();
+                    this.contactsInNominations = result;
+                    this.nominations.forEach(nominationItem => {
+                        nominationItem.contacts = this.contactsInNominations[nominationItem.Id];
+                    });
+                    this.updateContacts = true;
                 });
             });
 
         });
         
-        
-        
-        
-        
     }
+
+
     // @wire(getContactList, {queryTerm:'$queryTerm', nominationsId: '$selectedNomination'})
     // wiredContacts(response){
     //     this.contacts = response.data;
@@ -44,9 +49,9 @@ export default class VotingPage extends LightningElement {
     // wiredCampaigns(response){
     //     this.campaigns = response.data;
     // }
-    // handleEmailChange(evt){
-    //     this.voterEmail = evt.target.value;
-    // }
+    handleEmailChange(evt){
+        this.voterEmail = evt.target.value;
+    }
     
     // handleSearchChange(evt) {
     //     this.queryTerm = evt.target.value;
@@ -60,42 +65,43 @@ export default class VotingPage extends LightningElement {
     //     this.selectedCampaign = event.detail.value;
     // }
 
-    // handleClickButton() {
-    //     if(!this.voterEmail){
-    //         this.dispatchEvent(
-    //             new ShowToastEvent({
-    //                 title: 'Error',
-    //                 message: 'Fill all required fields!',
-    //                 variant: 'error',
-    //             })
-    //         );
-    //     }else{
-    //     // let voterContactId = getVoter({email: this.voterEmail});
-    //     // console.log('voterContact ' + voterContactId);
-    //     // console.log('selectedNomination ' + this.selectedNomination);
-    //     // console.log('selectedContact ' + this.selectedContact);
-    //     console.log('this.voterEmail ' + this.voterEmail);
-    //     createVote({finalVotes : this.posibleVotes, email: this.voterEmail})
-    //     .then( () => {
-    //         this.dispatchEvent(
-    //             new ShowToastEvent({
-    //                 title: 'Success',
-    //                 message: 'Your vote has been submited',
-    //                 variant: 'success',
-    //             })
-    //         );
-    //     })
-    //     .catch(error =>{ 
-    //         this.dispatchEvent(
-    //             new ShowToastEvent({
-    //                 title: 'Error',
-    //                 message: error.body.message,
-    //                 variant: 'error',
-    //             })
-    //         );
-    //     });
-    //     }
-    // }
+    handleClickButton() {
+        if(!this.voterEmail){
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: 'Fill all required fields!',
+                    variant: 'error',
+                })
+            );
+        }else{
+        // let voterContactId = getVoter({email: this.voterEmail});
+        // console.log('voterContact ' + voterContactId);
+        // console.log('selectedNomination ' + this.selectedNomination);
+        // console.log('selectedContact ' + this.selectedContact);
+        console.log('this.voterEmail ' + this.voterEmail);
+        createVote({finalVotes : this.posibleVotes, email: this.voterEmail})
+        .then( () => {
+            // this.dispatchEvent(
+            //     new ShowToastEvent({
+            //         title: 'Success',
+            //         message: 'Your vote has been submited',
+            //         variant: 'success',
+            //     })
+            // );
+            this.hasVoted = true;
+        })
+        .catch(error =>{ 
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error',
+                    message: error.body.message,
+                    variant: 'error',
+                })
+            );
+        });
+        }
+    }
 
     handleClickViewForm(evt) {
         let selectedContact = evt.currentTarget.dataset.id1;
@@ -105,7 +111,7 @@ export default class VotingPage extends LightningElement {
         // this.posibleVotes.set(nomination, selectedContact);
         this.posibleVotes[nomination] = selectedContact;
         // this.posibleVotes = {'nomination' : nomination , 'selectedContact' : selectedContact};
-        console.log('this.posibleVotes: ' + this.posibleVotes);
+        console.log('this.posibleVotes: ', this.posibleVotes);
     }
 
     // get nominationOptions() {
