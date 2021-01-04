@@ -41,15 +41,14 @@ public with sharing class VotingController {
 
     @AuraEnabled
     public static void createVote(Map<Id, Id> finalVotes, String email) {
-            Id voterId = getVoter(email);
-            List<CandidateNomination__c>  nominees  = [SELECT Id, NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :finalVotes.keySet() AND Nominees__c in :finalVotes.values() AND Type__c = 'Master'];
-            List<Vote__c> votes = new List<Vote__c>();
-            for(CandidateNomination__c cnItem : nominees){
-                if(cnItem.Nominees__c == finalVotes.get(cnItem.NominationId__c)){
-                    votes.add(new Vote__c(VoterId__c = voterId, CandidateNominationId__c = cnItem.Id));
-                }
-            }  
-        }
+        Id voterId = getVoter(email);
+        List<CandidateNomination__c>  nominees  = [SELECT Id, NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :finalVotes.keySet() AND Nominees__c in :finalVotes.values() AND Type__c = 'Master'];
+        List<Vote__c> votes = new List<Vote__c>();
+        for(CandidateNomination__c cnItem : nominees){
+            if(cnItem.Nominees__c == finalVotes.get(cnItem.NominationId__c)){
+                votes.add(new Vote__c(VoterId__c = voterId, CandidateNominationId__c = cnItem.Id));
+            }
+        }  
     }
 
     @AuraEnabled
