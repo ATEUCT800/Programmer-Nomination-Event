@@ -48,7 +48,8 @@ public with sharing class VotingController {
             if(cnItem.Nominees__c == finalVotes.get(cnItem.NominationId__c)){
                 votes.add(new Vote__c(VoterId__c = voterId, CandidateNominationId__c = cnItem.Id));
             }
-        }  
+        }
+        insert votes;
     }
 
     @AuraEnabled
