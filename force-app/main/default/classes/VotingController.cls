@@ -29,7 +29,7 @@ public with sharing class VotingController {
 
     @AuraEnabled
     public static Campaign getCampaignList(){
-        Campaign campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true][0];
+        Campaign campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true LIMIT 1];
         return campaignC;
     }
 
@@ -49,7 +49,11 @@ public with sharing class VotingController {
                 votes.add(new Vote__c(VoterId__c = voterId, CandidateNominationId__c = cnItem.Id));
             }
         }
-        insert votes;
+        try{
+            insert votes;
+        } catch (DmlException de){
+            throw new AuraException(de.getDmlMessage(0));
+        }
     }
 
     @AuraEnabled

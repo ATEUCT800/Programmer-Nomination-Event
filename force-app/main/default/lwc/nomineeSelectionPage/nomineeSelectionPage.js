@@ -64,6 +64,7 @@ export default class NomineeSelectionPage extends LightningElement {
                 );
             })
             .catch(error =>{ 
+                console.log('error', error);
                 this.dispatchEvent(
                     new ShowToastEvent({
                         title: 'Error',

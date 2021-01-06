@@ -60,7 +60,7 @@
         </template>
         <template if:true={hasVoted}>
             <p class='campaign-name'>Thank you for your vote!</p>
-            <a href='https://mindful-unicorn-rri44c-dev-ed.lightning.force.com/lightning/page/home' class='campaign-name'>Return to Home</a>
-        </template>    
+        </template>   
+        <lightning-button label="Go to Home" class="slds-var-m-around_medium" onclick={navigateToHome}></lightning-button> 
     </lightning-card>
 </template>

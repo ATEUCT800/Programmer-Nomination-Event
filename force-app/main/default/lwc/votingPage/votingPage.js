@@ -5,8 +5,9 @@ import getNominationList from '@salesforce/apex/VotingController.getNominationLi
 import createVote from '@salesforce/apex/VotingController.createVote';
 import getContactList from '@salesforce/apex/VotingController.getContactList';
 import getDescription from '@salesforce/apex/VotingController.getDescription';
+import { NavigationMixin } from 'lightning/navigation';
 
-export default class VotingPage extends LightningElement {
+export default class VotingPage extends NavigationMixin(LightningElement) {
     queryTerm; 
     contacts;
     @track contactsInNominations;
@@ -64,6 +65,7 @@ export default class VotingPage extends LightningElement {
             );
         })
         .catch(error =>{ 
+            console.log('error.body.message', error.body.message);
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
@@ -80,5 +82,16 @@ export default class VotingPage extends LightningElement {
         let selectedContact = evt.currentTarget.dataset.id1;
         let nomination = evt.currentTarget.dataset.id2;
         this.posibleVotes[nomination] = selectedContact;
+    }
+
+    navigateToHome() {
+        // Use the built-in 'Navigate' method
+        this[NavigationMixin.Navigate]({
+            // Pass in pageReference
+            type: 'standard__namedPage',
+            attributes: {
+                pageName: 'home'
+            }
+        });
     }
 }
