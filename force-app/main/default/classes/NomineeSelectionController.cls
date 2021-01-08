@@ -2,7 +2,9 @@ public with sharing class NomineeSelectionController {
 
     @AuraEnabled (cacheable = true)
     public static List<Contact> getContactList(String queryTerm) {
-        List<Contact> contacts = (Contact[]) [FIND :queryTerm IN NAME FIELDS RETURNING Contact(FirstName,LastName,Department, Avatar__c)][0];
+        queryTerm = '%' + queryTerm + '%';
+        // List<Contact> contacts = (Contact[]) [FIND :queryTerm IN NAME FIELDS RETURNING Contact(FirstName,LastName,Department, Avatar__c)][0];
+        List<Contact> contacts = [SELECT FirstName,LastName,Department, Avatar__c FROM Contact WHERE FirstName LIKE :queryTerm OR LastName LIKE :queryTerm];
         return contacts;
     }
 
