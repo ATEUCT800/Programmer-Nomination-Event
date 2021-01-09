@@ -29,8 +29,8 @@ public with sharing class VotingController {
 
     @AuraEnabled
     public static Campaign getCampaignList(){
-        Campaign campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true LIMIT 1];
-        return campaignC;
+        List<Campaign> campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true];
+        return campaignC[0];
     }
 
 

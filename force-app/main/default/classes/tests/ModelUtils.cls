@@ -1,5 +1,5 @@
+@isTest
 public with sharing class ModelUtils {
-
     public static Campaign getCampaign(){
         Campaign camp = new Campaign();
         camp.Name = 'Test Campaign';
@@ -10,8 +10,10 @@ public with sharing class ModelUtils {
 
     public static Nomination__c getNomination(){
         Nomination__c nom = new Nomination__c();
+        Campaign camp =  getCampaign();
+        insert camp;
         nom.Name = 'Test Nomination';
-        nom.CampaignId__c = getCampaign().Id;
+        nom.CampaignId__c = camp.Id;
         return nom;
     }
 
@@ -38,10 +40,40 @@ public with sharing class ModelUtils {
     }
 
     public static Vote__c getVote(){
-        Vote__c vote = new Vote__c();
-        vote.CandidateNominationId__c = getNominee().Id;
-        vote.VoterId__c = getVoterContact().Id;
+        CandidateNomination__c nominee = createCandidateNomination(1)[0];
+        insert nominee;
+        Contact voter = getVoterContact();
+        insert voter;
+        Vote__c vote = new Vote__c(VoterId__c=voter.Id, CandidateNominationId__c=nominee.Id);
         return vote;
+    }
+
+    public static List<CandidateNomination__c> createCandidateNomination(Integer numCandidates) {
+        // Campaign testCampaign = getCampaign();
+        // insert testCampaign;
+        Nomination__c testNomination = getNomination();
+        insert testNomination;
+        Contact testContact = getContact();
+        insert testContact;
+        List<CandidateNomination__c> candidates = new List<CandidateNomination__c>();
+            for (Integer i = 0; i < numCandidates; i++) {
+                CandidateNomination__c newCandidate = new CandidateNomination__c(NominationId__c = testNomination.Id,
+                        Nominees__c = testContact.Id, Description__c = 'test' + i);
+                candidates.add(newCandidate);
+            }
+        return candidates;
+    }
+
+    public static User userCreation() {
+        String uniqueUserName = 'standarduser' + DateTime.now().getTime() + '@testorg.com';
+        // This code runs as the system user
+        Profile p = [SELECT Id FROM Profile WHERE Name='System Administrator'];
+        User u = new User(Alias = 'standt', Email='standarduser2@testorg.com',
+        EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US',
+        LocaleSidKey='en_US', ProfileId = p.Id,
+        TimeZoneSidKey='America/Los_Angeles',
+            UserName=uniqueUserName);
+            return u;
     }
 
 }

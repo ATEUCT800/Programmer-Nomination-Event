@@ -1,7 +1,7 @@
 @isTest
 public with sharing class VotingControllerTest {
     private static Campaign campaign = ModelUtils.getCampaign();
-    private static Nomination__c nomination = ModelUtils.getNomination();
+    // private static Nomination__c nomination = ModelUtils.getNomination();
     private static Contact contact = ModelUtils.getContact();
     private static Contact voter = ModelUtils.getVoterContact();
     private static CandidateNomination__c nominee = ModelUtils.getNominee();
@@ -27,9 +27,9 @@ public with sharing class VotingControllerTest {
 
     //getCampaignList() returns one Campaign, not a list
     @isTest static void getCampaignListTest(){
+        Test.startTest();
         insert campaign;
         Id expected = campaign.Id;
-        Test.startTest();
         Id actual = VotingController.getCampaignList().Id;
         Test.stopTest();
         System.assertEquals(expected, actual, 'Campaign.Id stored in DB not equals to Campaign.Id received by method.');
@@ -37,7 +37,8 @@ public with sharing class VotingControllerTest {
 
     @isTest static void createOneVoteTest(){
         insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        Nomination__c nomination = ModelUtils.getNomination();
+        // nomination.CampaignId__c = campaign.Id;
         insert nomination;
         insert contact;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
@@ -123,8 +124,9 @@ public with sharing class VotingControllerTest {
     // }
 
     @isTest static void createVoteWithInvalidEmailTest(){
-        insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        // insert campaign;
+        // nomination.CampaignId__c = campaign.Id;
+        Nomination__c nomination = ModelUtils.getNomination();
         insert nomination;
         insert contact;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
@@ -153,8 +155,9 @@ public with sharing class VotingControllerTest {
 
     //Bug on VotingPage
     @isTest static void createVoteWithoutChoosenNomineeTest(){
-        insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        // insert campaign;
+        Nomination__c nomination = ModelUtils.getNomination();
+        // nomination.CampaignId__c = campaign.Id;
         insert nomination;
         insert contact;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
@@ -164,19 +167,22 @@ public with sharing class VotingControllerTest {
         insert voter;
 
         Map<Id,Id> votes = new Map<Id,Id>();
-        
+        Boolean wasException = false;
         Test.startTest();
-        VotingController.createVote(votes, voter.Email);
-        List<Vote__c> votesInDB = [SELECT Id FROM Vote__c WHERE VoterId__c =: voter.Id];   
+        try{
+            VotingController.createVote(votes, voter.Email);
+        } catch (AuraHandledException ahe){
+            wasException = true;
+        }
         Test.stopTest();
-
-        System.assertEquals(0, votesInDB.size());  
+        System.assert(wasException);  
 
     }
 
     @isTest static void createTheSameTwoVoteTest(){
-        insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        // insert campaign;
+        // nomination.CampaignId__c = campaign.Id;
+        Nomination__c nomination = ModelUtils.getNomination();
         insert nomination;
         insert contact;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
@@ -206,9 +212,10 @@ public with sharing class VotingControllerTest {
 
     @isTest
     static void testGetDescription() {
-        insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        // insert campaign;
+        // nomination.CampaignId__c = campaign.Id;
         insert contact;
+        Nomination__c nomination = ModelUtils.getNomination();
         insert nomination;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
         nominee.NominationId__c = nomination.Id;
@@ -223,8 +230,9 @@ public with sharing class VotingControllerTest {
 
     @isTest
     public static void testgetContactList(){
-        insert campaign;
-        nomination.CampaignId__c = campaign.Id;
+        // insert campaign;
+        // nomination.CampaignId__c = campaign.Id;
+        Nomination__c nomination = ModelUtils.getNomination();
         insert nomination;
         insert contact;
         //Nominee can get Nomination.Id and Contact.Id after their insert to DB
