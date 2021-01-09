@@ -35,12 +35,20 @@ public with sharing class VotingController {
 
 
     private static Id getVoter(String email){
-        Contact voter = [SELECT Id FROM Contact WHERE Email = :email];
-        return voter.Id;
+        try{
+            Contact voter = [SELECT Id FROM Contact WHERE Email = :email];
+            return voter.Id;
+        } catch (QueryException qe){
+            throw new AuraHandledException('User with such email doesn\'t exist');
+        }
+        
     }
 
     @AuraEnabled
     public static void createVote(Map<Id, Id> finalVotes, String email) {
+        if(finalVotes.isEmpty()){
+            throw new AuraHandledException('Please select at least one nominee!');
+        }
         Id voterId = getVoter(email);
         List<CandidateNomination__c>  nominees  = [SELECT Id, NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :finalVotes.keySet() AND Nominees__c in :finalVotes.values() AND Type__c = 'Master'];
         List<Vote__c> votes = new List<Vote__c>();
@@ -52,7 +60,7 @@ public with sharing class VotingController {
         try{
             insert votes;
         } catch (DmlException de){
-            throw new AuraException(de.getDmlMessage(0));
+            throw new AuraHandledException(de.getDmlMessage(0));
         }
     }
 
