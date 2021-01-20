@@ -1,6 +1,6 @@
-public with sharing class CandidateNominationTrH implements ITriggerHandler{
-
-    public void BeforeInsert(List<SObject> newRecord) {
+public class CandidateNominationTrH extends ITriggerHandler{
+    
+    public override void BeforeInsert(List<SObject> newRecord) {
         Set<Id> nominationsIds = new Set<Id>();
         Set<Id> nomineesIds = new Set<Id>();
         List<CandidateNomination__c> newCNRecord = (List<CandidateNomination__c>)newRecord;
@@ -32,7 +32,7 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
         }
     }
 
-    public void BeforeDelete(Map<Id, SObject> delRecord) {
+    public override void BeforeDelete(Map<Id, SObject> delRecord) {
         Set<String> deleted_cc_id = new Set<String>();
         for(CandidateNomination__c cc : (List<CandidateNomination__c>)delRecord.values()){
             deleted_cc_id.add(cc.id);
@@ -54,11 +54,4 @@ public with sharing class CandidateNominationTrH implements ITriggerHandler{
         }
         update childsForChangesList;
     }
-
-    public void BeforeUpdate(Map<Id, SObject> newItems, Map<Id, SObject> oldItems){}
-    public void AfterInsert(Map<Id, SObject> newItems){}
-    public void AfterUpdate(Map<Id, SObject> newItems, Map<Id, SObject> oldItems){}
-    public void AfterDelete(Map<Id, SObject> oldItems){}
-    public void AfterUndelete(Map<Id, SObject> oldItems){}
-
 }

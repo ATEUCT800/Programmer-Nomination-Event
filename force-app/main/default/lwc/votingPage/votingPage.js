@@ -37,7 +37,6 @@ export default class VotingPage extends NavigationMixin(LightningElement) {
             });
 
         });
-        
     }
     handleEmailChange(evt){
         this.voterEmail = evt.target.value;

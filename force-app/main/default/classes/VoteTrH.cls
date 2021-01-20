@@ -1,6 +1,6 @@
-public with sharing class VoteTrH implements ITriggerHandler {
+public with sharing class VoteTrH extends ITriggerHandler {
     //moved all to BeforeInsert
-    public void BeforeInsert(List<SObject> newItems){
+    public override void BeforeInsert(List<SObject> newItems){
         //One time conversion type SObject => Vote__c
         List<Vote__c> newVotes = (List<Vote__c>)newItems;
         Map<Id,CandidateNomination__c> candNomMap = new Map<Id,CandidateNomination__c>();
@@ -33,11 +33,4 @@ public with sharing class VoteTrH implements ITriggerHandler {
             }
         }
     }
-
-    public void AfterInsert(Map<Id, SObject> newItems){}
-    public void BeforeUpdate(Map<Id, SObject> newItems, Map<Id, SObject> oldItems){}
-    public void BeforeDelete(Map<Id, SObject> oldItems){}
-    public void AfterUpdate(Map<Id, SObject> newItems, Map<Id, SObject> oldItems){}
-    public void AfterDelete(Map<Id, SObject> oldItems){}
-    public void AfterUndelete(Map<Id, SObject> oldItems){}
 }
