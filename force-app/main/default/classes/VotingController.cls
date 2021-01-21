@@ -66,6 +66,14 @@ public with sharing class VotingController {
 
     @AuraEnabled
     public static String getDescription(Id contactId, Id nominationId){
-        return [SELECT Description__c FROM CandidateNomination__c WHERE NominationId__c = :nominationId AND Nominees__c = :contactId AND Type__c = 'Master'][0].Description__c;     
+        return [SELECT Description__c FROM CandidateNomination__c WHERE NominationId__c = :nominationId AND Nominees__c = :contactId AND Type__c = 'Master' LIMIT 1].Description__c;     
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static String getContactEmailByUUID(String UUID){
+        System.debug('UUID ' + UUID);  
+        Contact cont =  [SELECT Email FROM Contact WHERE UUID__c = :UUID LIMIT 1];   
+        System.debug('cont.Email ' + cont.Email);  
+        return cont.Email;
     }
 }

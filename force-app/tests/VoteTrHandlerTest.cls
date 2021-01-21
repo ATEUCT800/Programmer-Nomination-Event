@@ -73,29 +73,29 @@ public with sharing class VoteTrHandlerTest {
                                result2.getErrors()[0].getMessage());
     }
 
-    // @isTest
-    // static void testVoteForChildNominee(){
-    //     Campaign campaign = [SELECT Id, Name, IsActive, Type FROM Campaign LIMIT 1];
-    //     List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
-    //     Contact contact = contacts[0];
-    //     Contact voter = contacts[1];
-    //     Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
+    @isTest
+    static void testVoteForChildNominee(){
+        Campaign campaign = [SELECT Id, Name, IsActive, Type FROM Campaign LIMIT 1];
+        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
+        Contact contact = contacts[0];
+        Contact voter = contacts[1];
+        Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
 
-    //     CandidateNomination__c nominee1 = [SELECT Id, NominationId__c, Nominees__c, Description__c  FROM CandidateNomination__c LIMIT 1];
-    //     CandidateNomination__c nominee2 = new CandidateNomination__c(Nominees__c = contact.Id, NominationId__c = nomination.Id, Description__c='Test Discription2');
+        CandidateNomination__c nominee1 = [SELECT Id, NominationId__c, Nominees__c, Description__c  FROM CandidateNomination__c LIMIT 1];
+        CandidateNomination__c nominee2 = new CandidateNomination__c(Nominees__c = contact.Id, NominationId__c = nomination.Id, Description__c='Test Discription2');
         
-    //     User user = [SELECT Id, isActive FROM User WHERE Email='standarduser2@testorg.com'];
-    //     System.runAs(user) {
-    //         insert nominee2; 
-    //     }
+        User user = ModelUtils.buildSystemAdministrator();
+        insert user;
+        System.runAs(user) {
+            insert nominee2; 
+        }
+        Test.startTest();
+        Vote__c newVote = new Vote__c(CandidateNominationId__c = nominee2.Id, VoterId__c = voter.Id);
+        Database.SaveResult result = Database.insert(newVote, false);
+        Test.stopTest();
 
-    //     Test.startTest();
-    //     Vote__c newVote = new Vote__c(CandidateNominationId__c = nominee2.Id, VoterId__c = voter.Id);
-    //     Database.SaveResult result = Database.insert(newVote, false);
-    //     Test.stopTest();
-
-    //     newVote = [SELECT CandidateNominationId__c, VoterId__c FROM Vote__c WHERE Id = :newVote.Id];
-    //     System.assert(result.isSuccess());
-    //     System.assertEquals(nominee1.Id, newVote.CandidateNominationId__c);
-    // }
+        newVote = [SELECT CandidateNominationId__c, VoterId__c FROM Vote__c WHERE Id = :newVote.Id];
+        System.assert(result.isSuccess());
+        System.assertEquals(nominee1.Id, newVote.CandidateNominationId__c);
+    }
 }

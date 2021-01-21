@@ -5,44 +5,71 @@ import getNominationList from '@salesforce/apex/VotingController.getNominationLi
 import createVote from '@salesforce/apex/VotingController.createVote';
 import getContactList from '@salesforce/apex/VotingController.getContactList';
 import getDescription from '@salesforce/apex/VotingController.getDescription';
-import { NavigationMixin } from 'lightning/navigation';
+import getContactEmailByUUID from '@salesforce/apex/VotingController.getContactEmailByUUID';
+import { CurrentPageReference } from 'lightning/navigation';
 
-export default class VotingPage extends NavigationMixin(LightningElement) {
+export default class VotingPage extends LightningElement {
     queryTerm; 
     contacts;
     @track contactsInNominations;
     @track nominations;
     campaign;
-    voterEmail;
+    voterEmail = '';
     selectedNomination;
     selectedCampaign;
     posibleVotes = {};
     hasVoted = false;
+    voterUUID = '';
+    currentPageReference = null; 
+    urlStateParameters = null;
+
+    @wire(CurrentPageReference)
+    getStateParameters(currentPageReference) {
+        if (currentPageReference) {
+           this.urlStateParameters = currentPageReference.state;
+           this.setParametersBasedOnUrl();
+        }
+    }
+
+    setParametersBasedOnUrl() {
+        this.voterUUID = this.urlStateParameters.voteruuid || null;
+        console.log('this.voterUUID', this.voterUUID);
+        this.voterEmail = getContactEmailByUUID(this.voterUUID);
+        // console.log('this.voterEmail', this.voterEmail);
+    }
+    // get recordIdFromState(){
+    //     return this.currentPageReference &&
+    //         this.currentPageReference.state.voteruuid; 
+    // }
+
     connectedCallback(){
-        getCampaignList().then(result => { 
-            this.campaign = result;
-            getNominationList({campaign: this.campaign.Id}).then(result => { 
-                this.nominations = result.slice();
-                getContactList({nominations: this.nominations}).then(result => { 
-                    this.contactsInNominations = result;
-                    this.nominations.forEach(nominationItem => {
-                        this.contactsInNominations[nominationItem.Id].forEach(contactItem => {
-                            getDescription({contactId: contactItem.Id, nominationId: nominationItem.Id}).then(result => {
-                                contactItem.description =  result;
-                            });            
+            // getContactEmailByUUID(this.voterUUID).then(result => {
+            //     this.voterEmail =  result;
+            //     console.log('this.voterEmail', this.voterEmail);
+            // });  
+            // this.voterEmail = getContactEmailByUUID(this.voterUUID);
+            // console.log('this.voterEmail', this.voterEmail);
+            getCampaignList().then(result => { 
+                this.campaign = result;
+                getNominationList({campaign: this.campaign.Id}).then(result => { 
+                    this.nominations = result.slice();
+                    getContactList({nominations: this.nominations}).then(result => { 
+                        this.contactsInNominations = result;
+                        this.nominations.forEach(nominationItem => {
+                            this.contactsInNominations[nominationItem.Id].forEach(contactItem => {
+                                getDescription({contactId: contactItem.Id, nominationId: nominationItem.Id}).then(result => {
+                                    contactItem.description =  result;
+                                });            
+                            });
+                            nominationItem.contacts = this.contactsInNominations[nominationItem.Id];
                         });
-                        nominationItem.contacts = this.contactsInNominations[nominationItem.Id];
                     });
                 });
             });
-
-        });
-    }
-    handleEmailChange(evt){
-        this.voterEmail = evt.target.value;
-    }
-    
-    handleClickButton(evt) {
+        // });    
+    }    
+    handleClickButton(evt) {        
+        
         if(!this.voterEmail){
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -75,22 +102,10 @@ export default class VotingPage extends NavigationMixin(LightningElement) {
         });
         }
     }
-
     handleClickViewForm(evt) {
         evt.currentTarget.style.backgroundColor = 'rgb(40, 127, 241)';
         let selectedContact = evt.currentTarget.dataset.id1;
         let nomination = evt.currentTarget.dataset.id2;
         this.posibleVotes[nomination] = selectedContact;
-    }
-
-    navigateToHome() {
-        // Use the built-in 'Navigate' method
-        this[NavigationMixin.Navigate]({
-            // Pass in pageReference
-            type: 'standard__namedPage',
-            attributes: {
-                pageName: 'home'
-            }
-        });
     }
 }

@@ -15,7 +15,7 @@ public with sharing class ContentDocumentLinkTriggerTrH extends ITriggerHandler 
             for(ContentVersion contVerItem : contVerList){
                 if(contVerItem.ContentDocumentId == contDocItem.ContentDocumentId && contactMap.containsKey(contDocItem.LinkedEntityId)){
                     Contact tempContact = contactMap.get(contDocItem.LinkedEntityId);
-                    tempContact.Avatar__c = '/sfc/servlet.shepherd/version/download/' + contVerItem.Id;
+                    tempContact.Avatar__c = 'https://mindful-unicorn-rri44c-dev-ed.lightning.force.com/sfc/servlet.shepherd/version/download/' + contVerItem.Id;
                 }
             }
         }

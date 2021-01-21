@@ -1,5 +1,5 @@
 @isTest
-public without sharing class TestCandidateNominationTrH {
+public class TestCandidateNominationTrH {
 
     @testSetup
     static void makeData(){
@@ -18,24 +18,20 @@ public without sharing class TestCandidateNominationTrH {
         CandidateNomination__c nominee = ModelUtils.buildCandidateNomination(nomination, contact);
         insert nominee;
         System.debug('nominee = ' + nominee);
-        User standartUser = ModelUtils.buildStandartUser();
-        insert standartUser;
-        System.debug('standartUser = ' + standartUser);
-        User basicPSUser = ModelUtils.buildStandartUserWithBasicPS();
-        // basicPSUser.Email = 'basicPSuser@testorg.com';
-        insert basicPSUser;
-        // PermissionSetAssignment basicPSA = ModelUtils.buildBasicPermissionSetToUser(basicPStUser);
-        // insert basicPSA;
-        System.debug('basicPStUser = ' + basicPSUser);
-        User adminUser = ModelUtils.buildSystemAdministrator();
-        insert adminUser;
-        PermissionSet basicPS = [SELECT Id FROM PermissionSet WHERE Name = 'Basic'];
-        PermissionSetAssignment psa = new PermissionSetAssignment(PermissionSetId = basicPS.Id, AssigneeId = basicPSUser.Id);
+        // User standartUser = ModelUtils.buildStandartUser();
+        // insert standartUser;
+        // System.debug('standartUser = ' + standartUser);
+
+        // System.debug('basicPStUser = ' + basicPSUser);
+        // User adminUser = ModelUtils.buildSystemAdministrator();
+        // insert adminUser;
+        // PermissionSet basicPS = [SELECT Id FROM PermissionSet WHERE Name = 'Basic'];
+        // PermissionSetAssignment psa = new PermissionSetAssignment(PermissionSetId = basicPS.Id, AssigneeId = basicPSUser.Id);
         // System.runAs ( adminUser ){
-            insert psa;
+        //     insert psa;
         // }
-        PermissionSetAssignment perm = [SELECT PermissionSet.Name FROM PermissionSetAssignment WHERE AssigneeId = :basicPSUser.Id LIMIT 1];
-        System.debug('permission set' + perm.PermissionSet.Name);
+        // PermissionSetAssignment perm = [SELECT PermissionSet.Name FROM PermissionSetAssignment WHERE AssigneeId = :basicPSUser.Id LIMIT 1];
+        // System.debug('permission set' + perm.PermissionSet.Name);
 }
 //     @isTest
 //     static void testOneMasterInsert() {
@@ -52,17 +48,22 @@ public without sharing class TestCandidateNominationTrH {
     static void testOneMasterAndChildInsert() {
         // List<CandidateNomination__c> candidates = ModelUtils.createCandidateNomination(2);
         // System.debug(candidates);
-        User basicPStUser = [SELECT isActive FROM User WHERE Email='basicPSuser@testorg.com'];
-        PermissionSetAssignment perm = [SELECT PermissionSet.Name, AssigneeId FROM PermissionSetAssignment WHERE AssigneeId = :basicPStUser.Id LIMIT 1];
-        System.debug('basicPStUser' + basicPStUser.Id);
-        System.debug('permission set' + perm.PermissionSet.Name);
-        System.debug('AssigneeId' + perm.AssigneeId);
+        // User basicPStUser = [SELECT isActive FROM User WHERE Email='basicPSuser@testorg.com'];
+        User basicPSUser = ModelUtils.buildStandartUserWithBasicPS();
+        basicPSUser.Email = 'basicPSuser@testorg.com';
+        insert basicPSUser;
+        PermissionSetAssignment basicPSA = ModelUtils.buildBasicPermissionSetToUser(basicPSUser);
+        insert basicPSA;
+        // PermissionSetAssignment perm = [SELECT PermissionSet.Name, AssigneeId FROM PermissionSetAssignment WHERE AssigneeId = :basicPStUser.Id LIMIT 1];
+        System.debug('basicPStUser' + basicPSUser.Id);
+        // System.debug('permission set' + perm.PermissionSet.Name);
+        // System.debug('AssigneeId' + perm.AssigneeId);
         CandidateNomination__c master = [SELECT Nominees__c, NominationId__c, Description__c, Type__c, MasterRecordID__c FROM CandidateNomination__c LIMIT 1];
+        CandidateNomination__c child = new CandidateNomination__c(NominationId__c = master.NominationId__c, Nominees__c = master.Nominees__c, Description__c = 'Test Discription');
         Test.startTest();
-        CandidateNomination__c child;
         Database.SaveResult resultChild;
-        System.runAs(basicPStUser) {
-            child = new CandidateNomination__c(NominationId__c = master.NominationId__c, Nominees__c = master.Nominees__c, Description__c = 'Test Discription');
+        System.runAs(basicPSUser) {
+            
             resultChild = Database.insert(child, false);
         }
         Test.stopTest();

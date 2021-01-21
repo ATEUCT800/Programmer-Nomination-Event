@@ -90,6 +90,7 @@ public without sharing class ModelUtils {//TestUtils
             UserName=uniqueUserName, UserPermissionsMarketingUser = true, IsActive = true, UserPermissionsSFContentUser=true);
             return u;
     }
+    //assign
     public static PermissionSetAssignment buildBasicPermissionSetToUser(User u) {
         PermissionSet basicPS = [SELECT Id FROM PermissionSet WHERE Name = 'Basic'];
         PermissionSetAssignment psa = new PermissionSetAssignment(PermissionSetId = basicPS.Id, AssigneeId = u.Id);
