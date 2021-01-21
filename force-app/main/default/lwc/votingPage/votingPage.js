@@ -34,7 +34,7 @@ export default class VotingPage extends LightningElement {
     setParametersBasedOnUrl() {
         this.voterUUID = this.urlStateParameters.voteruuid || null;
         console.log('this.voterUUID', this.voterUUID);
-        this.voterEmail = getContactEmailByUUID(this.voterUUID);
+        // this.voterEmail = getContactEmailByUUID(this.voterUUID);
         // console.log('this.voterEmail', this.voterEmail);
     }
     // get recordIdFromState(){
@@ -70,7 +70,7 @@ export default class VotingPage extends LightningElement {
     }    
     handleClickButton(evt) {        
         
-        if(!this.voterEmail){
+        if(!this.voterUUID){
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
@@ -79,7 +79,7 @@ export default class VotingPage extends LightningElement {
                 })
             );
         }else{
-        createVote({finalVotes : this.posibleVotes, email: this.voterEmail})
+        createVote({finalVotes : this.posibleVotes, UUID: this.voterUUID})
         .then( () => {
             this.hasVoted = true;
             this.dispatchEvent(
