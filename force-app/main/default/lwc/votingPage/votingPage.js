@@ -5,7 +5,6 @@ import getNominationList from '@salesforce/apex/VotingController.getNominationLi
 import createVote from '@salesforce/apex/VotingController.createVote';
 import getContactList from '@salesforce/apex/VotingController.getContactList';
 import getDescription from '@salesforce/apex/VotingController.getDescription';
-import getContactEmailByUUID from '@salesforce/apex/VotingController.getContactEmailByUUID';
 import { CurrentPageReference } from 'lightning/navigation';
 
 export default class VotingPage extends LightningElement {
