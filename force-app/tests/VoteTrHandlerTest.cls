@@ -15,10 +15,6 @@ public with sharing class VoteTrHandlerTest {
         insert nominee;
         User standartUser = ModelUtils.buildStandartUser();
         insert standartUser;
-        // System.debug('standartUser = ' + standartUser);
-        // User basicPStUser = ModelUtils.buildStandartUserWithBasicPS();
-        // insert basicPStUser;
-        //System.debug('basicPStUser = ' + basicPStUser);
         User adminUser = ModelUtils.buildSystemAdministrator();
         insert adminUser;
     }

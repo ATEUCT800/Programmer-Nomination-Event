@@ -52,6 +52,10 @@ public class CandidateNominationTrH extends ITriggerHandler{
                 childsForChangesList.addAll(childList);
             } 
         }
-        update childsForChangesList;
+        try{
+            update childsForChangesList;
+        } catch (DmlException de){
+            throw new AuraHandledException(de.getDmlMessage(0));
+        }
     }
 }

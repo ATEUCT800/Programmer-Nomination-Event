@@ -15,6 +15,7 @@ export default class NomineeSelectionPage extends LightningElement {
     selectedContact;
     description;
     hasVoted = false;
+    lastTarget;
     @wire(getContactList, {queryTerm:'$queryTerm'})
     wiredContacts(response){
         this.contacts = response.data;
@@ -77,9 +78,15 @@ export default class NomineeSelectionPage extends LightningElement {
     }
 
     handleClickViewForm(evt) {
-        evt.currentTarget.style.backgroundColor = 'rgb(40, 127, 241)';
+        console.log('evt.currentTarget.className before update', evt.currentTarget.className);
+        evt.currentTarget.className += ' selected-record';
+        console.log('evt.currentTarget.className after update', evt.currentTarget.className);
         this.selectedContact = evt.currentTarget.dataset.id;
-        console.log (this.selectedContact);
+        console.log('this.selectedContact', this.selectedContact);
+        if(this.lastTarget){
+            this.lastTarget.className = this.lastTarget.className.replace(' selected-record', '');
+        }
+        this.lastTarget = evt.currentTarget;
     }
 
     get nominationOptions() {

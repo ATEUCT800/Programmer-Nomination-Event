@@ -42,22 +42,6 @@ public without sharing class ModelUtils {//TestUtils
         return vote;
     }
 
-    // public static List<CandidateNomination__c> createCandidateNomination(Integer numCandidates) {
-    //     // Campaign testCampaign = getCampaign();
-    //     // insert testCampaign;
-    //     Nomination__c testNomination = getNomination();
-    //     insert testNomination;
-    //     Contact testContact = getContact();
-    //     insert testContact;
-    //     List<CandidateNomination__c> candidates = new List<CandidateNomination__c>();
-    //         for (Integer i = 0; i < numCandidates; i++) {
-    //             CandidateNomination__c newCandidate = new CandidateNomination__c(NominationId__c = testNomination.Id,
-    //                     Nominees__c = testContact.Id, Description__c = 'test' + i);
-    //             candidates.add(newCandidate);
-    //         }
-    //     return candidates;
-    // }
-
     public static User buildStandartUser() {
         String uniqueUserName = 'standarduser' + DateTime.now().getTime() + '@testorg.com';
         Profile p = [SELECT Id FROM Profile WHERE Name='Standard User'];

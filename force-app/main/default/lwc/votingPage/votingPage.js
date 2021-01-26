@@ -1,10 +1,11 @@
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, wire, track} from 'lwc';
-import getCampaignList from '@salesforce/apex/VotingController.getCampaignList';
+import getCurrentCampaign from '@salesforce/apex/VotingController.getCurrentCampaign';
 import getNominationList from '@salesforce/apex/VotingController.getNominationList';
 import createVote from '@salesforce/apex/VotingController.createVote';
 import getContactList from '@salesforce/apex/VotingController.getContactList';
 import getDescription from '@salesforce/apex/VotingController.getDescription';
+import getFullInfo from '@salesforce/apex/VotingController.getFullInfo';
 import { CurrentPageReference } from 'lightning/navigation';
 
 export default class VotingPage extends LightningElement {
@@ -13,14 +14,14 @@ export default class VotingPage extends LightningElement {
     @track contactsInNominations;
     @track nominations;
     campaign;
-    voterEmail = '';
     selectedNomination;
     selectedCampaign;
     posibleVotes = {};
-    hasVoted = false;
     voterUUID = '';
     currentPageReference = null; 
     urlStateParameters = null;
+    lastTargets = {};
+    votingDataModel;
 
     @wire(CurrentPageReference)
     getStateParameters(currentPageReference) {
@@ -32,79 +33,69 @@ export default class VotingPage extends LightningElement {
 
     setParametersBasedOnUrl() {
         this.voterUUID = this.urlStateParameters.voteruuid || null;
-        console.log('this.voterUUID', this.voterUUID);
-        // this.voterEmail = getContactEmailByUUID(this.voterUUID);
-        // console.log('this.voterEmail', this.voterEmail);
     }
-    // get recordIdFromState(){
-    //     return this.currentPageReference &&
-    //         this.currentPageReference.state.voteruuid; 
-    // }
 
     connectedCallback(){
-            // getContactEmailByUUID(this.voterUUID).then(result => {
-            //     this.voterEmail =  result;
-            //     console.log('this.voterEmail', this.voterEmail);
-            // });  
-            // this.voterEmail = getContactEmailByUUID(this.voterUUID);
-            // console.log('this.voterEmail', this.voterEmail);
-            getCampaignList().then(result => { 
-                this.campaign = result;
-                getNominationList({campaign: this.campaign.Id}).then(result => { 
-                    this.nominations = result.slice();
-                    getContactList({nominations: this.nominations}).then(result => { 
-                        this.contactsInNominations = result;
-                        this.nominations.forEach(nominationItem => {
-                            this.contactsInNominations[nominationItem.Id].forEach(contactItem => {
-                                getDescription({contactId: contactItem.Id, nominationId: nominationItem.Id}).then(result => {
-                                    contactItem.description =  result;
-                                });            
-                            });
-                            nominationItem.contacts = this.contactsInNominations[nominationItem.Id];
-                        });
-                    });
+        getFullInfo({voterUUID : this.voterUUID}).then(result => {
+            this.votingDataModel = result;
+            this.campaign = this.votingDataModel.currentCampaign;
+            this.nominations = Object.values(this.votingDataModel.nominationList);
+            if(this.nominations.length == 0){
+                this.nominations = null;
+            } else {
+                this.contactsInNominations = this.votingDataModel.nomineesInNomination;
+                this.nominations.forEach(nominationItem => {
+                    this.contactsInNominations[nominationItem.Id].forEach(contactItem => {
+                            contactItem.description =  this.votingDataModel.nomineesWithDescription[contactItem.Id];
+                        });            
+                    nominationItem.contacts = this.contactsInNominations[nominationItem.Id];
                 });
-            });
-        // });    
-    }    
+            }
+        });
+    }   
+
     handleClickButton(evt) {        
-        
         if(!this.voterUUID){
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error',
-                    message: 'Fill all required fields!',
+                    message: 'You must enter this section via link in invitation email only!',
                     variant: 'error',
                 })
             );
         }else{
-        createVote({finalVotes : this.posibleVotes, UUID: this.voterUUID})
-        .then( () => {
-            this.hasVoted = true;
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Success',
-                    message: 'Your vote has been submited',
-                    variant: 'success',
-                })
-            );
-        })
-        .catch(error =>{ 
-            console.log('error.body.message', error.body.message);
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: 'Error',
-                    message: error.body.message,
-                    variant: 'error',
-                })
-            );
-        });
+            createVote({finalVotes : this.posibleVotes, UUID: this.voterUUID})
+            .then( () => {
+                this.hasVoted = true;
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Your vote has been submited',
+                        variant: 'success',
+                    })
+                );
+            })
+            .catch(error =>{ 
+                console.log('error.body.message', error.body.message);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: error.body.message,
+                        variant: 'error',
+                    })
+                );
+            });
         }
     }
+
     handleClickViewForm(evt) {
-        evt.currentTarget.style.backgroundColor = 'rgb(40, 127, 241)';
+        evt.currentTarget.className += ' selected-record';
         let selectedContact = evt.currentTarget.dataset.id1;
         let nomination = evt.currentTarget.dataset.id2;
         this.posibleVotes[nomination] = selectedContact;
+        if(this.lastTargets[nomination]){
+            this.lastTargets[nomination].className = this.lastTargets[nomination].className.replace(' selected-record', '');
+        }
+        this.lastTargets[nomination] = evt.currentTarget;
     }
 }

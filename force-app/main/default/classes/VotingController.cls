@@ -1,8 +1,24 @@
 public with sharing class VotingController {
-    
+
+    @AuraEnabled
+    public static VotingDataModel getFullInfo(String voterUUID) {                                                
+        Id voterId = getVoter(voterUUID);
+        List<Vote__c> alreadyVotedVotes = [SELECT CandidateNominationId__r.NominationId__c FROM Vote__c WHERE VoterId__c = :voterId];
+        Set<Id> alreadyVotedNominations = new Set<Id>();
+        for(Vote__c voteItem : alreadyVotedVotes){
+            alreadyVotedNominations.add(voteItem.CandidateNominationId__r.NominationId__c);
+        }
+        Campaign currentCampaign = getCurrentCampaign();
+        Map<Id, Nomination__c> nominations = new Map<Id, Nomination__c>([SELECT Id, Name, Avatar__c FROM Nomination__c WHERE CampaignId__c = :currentCampaign.Id AND Id NOT IN :alreadyVotedNominations]);
+        Map<Id, List<Contact>> nomineesInNomination = getContactList(nominations.values());
+        Map<Id, String> nomineesWithDescription = getDescription(nominations.values());
+        VotingDataModel votingDataModel = new VotingDataModel(currentCampaign, nominations, nomineesInNomination, nomineesWithDescription);
+        return votingDataModel;
+    }
+
     @AuraEnabled
     public static Map<Id, List<Contact>> getContactList(List<Nomination__c> nominations) {                                                
-        List<CandidateNomination__c> cnWithCurrentNomination = [SELECT NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :nominations AND Type__c = 'Master']; 
+        List<CandidateNomination__c> cnWithCurrentNomination = [SELECT Id, NominationId__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c in :nominations AND Type__c = 'Master']; 
         Set<Id> nominees = new Set<Id>();
         for(CandidateNomination__c itemCN : cnWithCurrentNomination){
             nominees.add(itemCN.Nominees__c);
@@ -28,9 +44,9 @@ public with sharing class VotingController {
     }
 
     @AuraEnabled
-    public static Campaign getCampaignList(){
-        List<Campaign> campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true];
-        return campaignC[0];
+    public static Campaign getCurrentCampaign(){
+        Campaign campaignC =  [SELECT Id, Name FROM Campaign WHERE Type = 'Voting'  AND IsActive = true LIMIT 1];
+        return campaignC;
     }
 
 
@@ -65,7 +81,12 @@ public with sharing class VotingController {
     }
 
     @AuraEnabled
-    public static String getDescription(Id contactId, Id nominationId){
-        return [SELECT Description__c FROM CandidateNomination__c WHERE NominationId__c = :nominationId AND Nominees__c = :contactId AND Type__c = 'Master' LIMIT 1].Description__c;     
+    public static Map<Id, String> getDescription(List<Nomination__c> nominationList){
+        List<CandidateNomination__c> listCN = [SELECT Id, Description__c, Nominees__c FROM CandidateNomination__c WHERE NominationId__c IN :nominationList AND Type__c = 'Master'];
+        Map<Id, String> contactDiscritionMap = new Map<Id, String>();
+        for(CandidateNomination__c cnItem : listCN){
+            contactDiscritionMap.put(cnItem.Nominees__c, cnItem.Description__c);
+        }
+        return contactDiscritionMap;     
     }
 }

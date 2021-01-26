@@ -37,11 +37,11 @@ public with sharing class VotingControllerTest {
         System.assertEquals(1, resultNominations2.size());
     } 
 
-    @isTest static void getCampaignListTest(){
+    @isTest static void getCurrentCampaignTest(){
         Campaign campaign = [SELECT Id FROM Campaign LIMIT 1];
         Test.startTest();
         Id expected = campaign.Id;
-        Id actual = VotingController.getCampaignList().Id;
+        Id actual = VotingController.getCurrentCampaign().Id;
         Test.stopTest();
         System.assertEquals(expected, actual, 'Campaign.Id stored in DB not equals to Campaign.Id received by method.');
     }
@@ -49,24 +49,24 @@ public with sharing class VotingControllerTest {
     @isTest static void createOneVoteTest(){
         Campaign campaign = [SELECT Id FROM Campaign LIMIT 1];
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        Contact voter = [SELECT Id, LastName, Email FROM Contact][1];
+        Contact voter = [SELECT Id, LastName, UUID__c FROM Contact][1];
         CandidateNomination__c nominee = [SELECT NominationId__c, Nominees__c, Description__c FROM CandidateNomination__c LIMIT 1];
 
         Map<Id,Id> votes = new Map<Id,Id>();
         votes.put(nomination.Id, nominee.Nominees__c);
 
         Test.startTest();
-        VotingController.createVote(votes, voter.Email);
+        VotingController.createVote(votes, voter.UUID__c);
         Test.stopTest();
         List<Vote__c> votesInDB = [SELECT Id, VoterId__c, CandidateNominationId__c FROM Vote__c 
                                 WHERE CandidateNominationId__c =:nominee.Id AND VoterId__c =: voter.Id];
         System.assertEquals(1, votesInDB.size(), 'Vote was not inserted.');
     }
-
+    
     @isTest static void createSomeVotesTest(){
         Campaign campaign = [SELECT Id, Name FROM Campaign LIMIT 1];
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
+        List<Contact> contacts = [SELECT Id, LastName, UUID__c FROM Contact];
         Contact contact = contacts[0];
         Contact voter = contacts[1];
 
@@ -94,13 +94,13 @@ public with sharing class VotingControllerTest {
         votes.put(nomination3.Id, nominee3.Nominees__c);
         
         Test.startTest();
-        VotingController.createVote(votes, voter.Email);
+        VotingController.createVote(votes, voter.UUID__c);
         List<Vote__c> votesInDB = [SELECT Id FROM Vote__c  WHERE VoterId__c =: voter.Id];
         Test.stopTest();
         System.assertNotEquals(0, votesInDB.size(), 'Votes was not inserted.');                        
     }
 
-    @isTest static void createVoteWitoutEmailTest(){
+    @isTest static void createVoteWitoutUUIDTest(){
         Campaign campaign = [SELECT Id, Name FROM Campaign LIMIT 1];
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
         Contact voter = new Contact(LastName = 'Test VoterWitoutEmail');
@@ -112,17 +112,17 @@ public with sharing class VotingControllerTest {
 
         Test.startTest();
         try{
-            VotingController.createVote(votes, voter.Email);
-            System.assert(false);
+            VotingController.createVote(votes, voter.UUID__c);
+            System.assert(false,'Vote cannot be created without UUID.');
         }catch(AuraHandledException aex){
             System.assert(true);
         }
         Test.stopTest();  
     }
 
-    @isTest static void createVoteWithInvalidEmailTest(){
+    @isTest static void createVoteWithInvalidUUIDTest(){
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
+        List<Contact> contacts = [SELECT Id, LastName, UUID__c FROM Contact];
         Contact contact = contacts[0];
         Contact voter = contacts[1];
         CandidateNomination__c nominee = [SELECT Id, Nominees__c FROM CandidateNomination__c LIMIT 1];
@@ -130,11 +130,11 @@ public with sharing class VotingControllerTest {
         Map<Id,Id> votes = new Map<Id,Id>();
         votes.put(nomination.Id, nominee.Nominees__c);
 
-        String invalidEmail = 'invalid.email@gmail.com';
+        String invalidUUID = '12345';
         Test.startTest();
         try{
-            VotingController.createVote(votes, invalidEmail);
-            System.assert(false);
+            VotingController.createVote(votes, invalidUUID);
+            System.assert(false,'Vote cannot be created with invalid UUID.');
         } catch (AuraHandledException ahe){
             System.assert(true);
         }
@@ -143,7 +143,7 @@ public with sharing class VotingControllerTest {
 
     @isTest static void createVoteWithoutChoosenNomineeTest(){
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
+        List<Contact> contacts = [SELECT Id, LastName, UUID__c FROM Contact];
         Contact contact = contacts[0];
         Contact voter = contacts[1];
         CandidateNomination__c nominee = [SELECT Id, Nominees__c FROM CandidateNomination__c LIMIT 1];
@@ -151,8 +151,8 @@ public with sharing class VotingControllerTest {
         Map<Id,Id> votes = new Map<Id,Id>();
         Test.startTest();
         try{
-            VotingController.createVote(votes, voter.Email);
-            System.assert(false);
+            VotingController.createVote(votes, voter.UUID__c);
+            System.assert(false, 'Vote cannot be created without choosen nominee.');
         } catch (AuraHandledException ahe){
             System.assert(true);
         }
@@ -161,7 +161,7 @@ public with sharing class VotingControllerTest {
 
     @isTest static void createTheSameTwoVoteTest(){
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
+        List<Contact> contacts = [SELECT Id, LastName, UUID__c FROM Contact];
         Contact contact = contacts[0];
         Contact voter = contacts[1];
         CandidateNomination__c nominee = [SELECT Id, Nominees__c FROM CandidateNomination__c LIMIT 1];
@@ -172,9 +172,9 @@ public with sharing class VotingControllerTest {
         Test.startTest();
         Boolean wasException = false;
         try{
-            VotingController.createVote(votes, voter.Email);
-            VotingController.createVote(votes, voter.Email);
-            System.assert(false);
+            VotingController.createVote(votes, voter.UUID__c);
+            VotingController.createVote(votes, voter.UUID__c);
+            System.assert(false,'Cannot create the same two votes.');
         } catch (AuraHandledException ahe){
             System.assert(true);
         } 
@@ -184,25 +184,38 @@ public with sharing class VotingControllerTest {
     @isTest
     static void testGetDescription() {
         Nomination__c nomination = [SELECT Id, Name, CampaignId__c FROM Nomination__c LIMIT 1];
-        List<Contact> contacts = [SELECT Id, LastName, Email FROM Contact];
-        Contact contact = contacts[0];
-        Contact voter = contacts[1];
-        CandidateNomination__c nominee = [SELECT Id, Nominees__c FROM CandidateNomination__c LIMIT 1];
-
+        Contact contact = [SELECT Id, LastName, UUID__c FROM Contact LIMIT 1];
+        List<Nomination__c> nominationList = new List<Nomination__c>{nomination};
         Test.startTest();
-        String result = VotingController.getDescription(contact.Id, nomination.Id);
+        Map<Id, String> result = VotingController.getDescription(nominationList);
         Test.stopTest();
-        System.assertEquals('Test Discription', result);
+        System.assertEquals('Test Discription', result.get(contact.Id));
     }
 
     @isTest
-    public static void testgetContactList(){
+    public static void testGetContactList(){
         List<Nomination__c> nominations = [SELECT Id, Name, CampaignId__c FROM Nomination__c];
 
         Test.startTest();
         Map<Id, List<Contact>> result = VotingController.getContactList(nominations);
         Test.stopTest();
-        System.assertEquals(1 , result.size() );   
+        System.assertEquals(1 , result.size());   
+    }
+
+    @isTest
+    public static void testGetFullInfo(){
+        Campaign campaign = [SELECT Id, Name FROM Campaign LIMIT 1];
+        Contact voter = [SELECT Id, LastName, UUID__c FROM Contact LIMIT 1];
+        Map<Id, Nomination__c> nominations = new Map<Id, Nomination__c>([SELECT Id, Name, Avatar__c FROM Nomination__c]);
+        Map<Id, List<Contact>> nomineesInNomination = VotingController.getContactList(nominations.values());
+        Map<Id, String> nomineesWithDescription = VotingController.getDescription(nominations.values());
+        VotingDataModel expected = new VotingDataModel(campaign, nominations, nomineesInNomination, nomineesWithDescription);
+        Test.startTest();
+        VotingDataModel result = VotingController.getFullInfo(voter.UUID__c);
+        Test.stopTest();
+        System.debug(expected);
+        System.debug(result);
+        System.assertEquals(String.valueOf(expected), String.valueOf(result), 'Wrong data model creation result');
     }
 
 }
